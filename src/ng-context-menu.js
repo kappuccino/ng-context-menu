@@ -12,7 +12,8 @@
     .factory('ContextMenuService', function() {
       return {
         element: null,
-        menuElement: null
+        menuElement: null,
+        data: null
       };
     })
     .directive('contextMenu', [
@@ -22,6 +23,7 @@
         return {
           restrict: 'A',
           scope: {
+            'data': '=contextMenuData',
             'callback': '&contextMenu',
             'disabled': '&contextMenuDisabled',
             'closeCallback': '&contextMenuClose'
@@ -30,6 +32,9 @@
             var opened = false;
 
             function open(event, menuElement) {
+              ContextMenuService.data = $scope.data
+
+              if(!menuElement.length) return false;
               menuElement.addClass('open');
 
               var doc = $document[0].documentElement;
@@ -80,14 +85,18 @@
                 ContextMenuService.element = event.target;
                 //console.log('set', ContextMenuService.element);
 
-                event.preventDefault();
-                event.stopPropagation();
-                $scope.$apply(function() {
-                  $scope.callback({ $event: event });
-                });
-                $scope.$apply(function() {
-                  open(event, ContextMenuService.menuElement);
-                });
+                if(ContextMenuService.menuElement.length) {
+                  event.preventDefault();
+                  event.stopPropagation();
+
+                  $scope.$apply(function () {
+                    $scope.callback({$event: event});
+                  });
+
+                  $scope.$apply(function () {
+                    open(event, ContextMenuService.menuElement);
+                  });
+                }
               }
             });
 
